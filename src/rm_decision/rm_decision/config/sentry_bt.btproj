@@ -8,8 +8,10 @@
         <Condition ID="IfAddHpConditionOk" editable="true"/>
         <Condition ID="IfAttack" editable="true"/>
         <Condition ID="IfDefend" editable="true"/>
+        <Condition ID="IfGuard" editable="true"/>
         <Condition ID="IfHighHp" editable="true"/>
         <Condition ID="IfOrdered" editable="true"/>
+        <Action ID="MoveAround" editable="true"/>
         <Action ID="addhp_handle" editable="true"/>
         <Action ID="attack_handle" editable="true"/>
         <Action ID="base_handle" editable="true"/>

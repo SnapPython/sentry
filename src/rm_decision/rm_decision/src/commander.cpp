@@ -20,10 +20,8 @@
 #include <cmath>
 #include "rm_decision/commander.hpp"
 
-//behave tree
-// #include "behaviortree_cpp/bt_factory.h"
-// file that contains the custom nodes definitions
-// #include "rm_decision/sentry_behavetree.hpp"
+#include <nav2_msgs/action/navigate_to_pose.hpp>
+#include <nav2_msgs/srv/clear_entire_costmap.hpp>
 
 using namespace std::chrono_literals;
 
@@ -66,8 +64,10 @@ namespace rm_decision
          "/nav/sub", 10, std::bind(&Commander::nav_callback, this, std::placeholders::_1));
       aim_sub_ = this->create_subscription<auto_aim_interfaces::msg::Target>(
          "/tracker/target", rclcpp::SensorDataQoS(),std::bind(&Commander::aim_callback, this, std::placeholders::_1));
-      enemypose_sub_ = this->create_subscription<  geometry_msgs::msg::PointStamped>(
+      enemypose_sub_ = this->create_subscription<geometry_msgs::msg::PointStamped>(
          "/tracker/enemypose", 10,std::bind(&Commander::enemypose_callback, this, std::placeholders::_1));
+      laser_sub_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
+              "scan", 10,std::bind(&Commander::laserScanCallback, this, std::placeholders::_1));
       // 创建线程（处理信息和发布命令）
       commander_thread_ = std::thread(&Commander::decision, this);
       executor_thread_ = std::thread(&Commander::executor, this);
@@ -99,6 +99,7 @@ namespace rm_decision
         factory.registerSimpleCondition("IfAddHp", std::bind(&Commander::IfAddHp, this));
         factory.registerSimpleCondition("IfDefend", std::bind(&Commander::IfDefend, this));
         factory.registerSimpleCondition("IfAttack", std::bind(&Commander::IfAttack, this));
+        factory.registerSimpleCondition("IfGuard", std::bind(&Commander::IfGuard, this));
 
         factory.registerSimpleAction("dafu_handle", std::bind(&Commander::dafu_handle, this));
         factory.registerSimpleAction("outpose_handle", std::bind(&Commander::outpose_handle, this));
@@ -107,6 +108,7 @@ namespace rm_decision
         factory.registerSimpleAction("defend_handle", std::bind(&Commander::defend_handle, this));
         factory.registerSimpleAction("attack_handle", std::bind(&Commander::attack_handle, this));
         factory.registerSimpleAction("Guard", std::bind(&Commander::Guard_handle, this));
+        factory.registerSimpleAction("MoveAround", std::bind(&Commander::MoveAround_handle, this));
 
       auto tree = factory.createTreeFromFile("./src/rm_decision/rm_decision/config/sentry_bt.xml"); //official
       // auto tree = factory.createTreeFromFile("./rm_decision/config/sentry_bt.xml");  //for debug
@@ -323,6 +325,21 @@ namespace rm_decision
          RCLCPP_INFO(this->get_logger(), "敌方位置: %.2f, %.2f, %.2f",enemypose.pose.position.x ,enemypose.pose.position.y,enemypose.pose.position.z);
    }
 
+    //取距
+    double Commander::distence(const geometry_msgs::msg::PoseStamped a){
+        double dis = sqrt(pow(a.pose.position.x , 2) + pow(a.pose.position.y, 2));
+        return dis;
+    }
+
+    void Commander::laserScanCallback(const sensor_msgs::msg::LaserScan::SharedPtr scan){
+
+    }
+
+//    void Commander::navToRandomPose() {
+//       double target_x = 1;
+//       double target_y = 1;
+//   }
+
    // 巡逻模式
    void PatrolState::handle() {
       if(commander->checkgoal){
@@ -374,12 +391,6 @@ namespace rm_decision
          }
          commander->checkgoal = false;
       }
-   }
-
-   //取距
-   double Commander::distence(const geometry_msgs::msg::PoseStamped a){
-      double dis = sqrt(pow(a.pose.position.x , 2) + pow(a.pose.position.y, 2));
-      return dis;
    }
 
 

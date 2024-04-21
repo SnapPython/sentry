@@ -35,6 +35,7 @@
 #include "auto_aim_interfaces/msg/target.hpp"
 #include "rm_decision_interfaces/msg/receive_serial.hpp"
 
+#include <sensor_msgs/msg/laser_scan.hpp>
 //behave tree
 #include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/action_node.h"
@@ -223,6 +224,9 @@ public:
   float self_ammo;
   float self_base;
   int nav_state;  //1 for SUCCEEDED 2 for ABORTED 3 for CANCELED 4 for RUNNING
+  bool order = false; //用于巡逻模式，详情见飞书
+
+  void navToRandomPose();
 
   private:
   
@@ -236,6 +240,7 @@ public:
   void aim_callback(const auto_aim_interfaces::msg::Target::SharedPtr msg);
   void nav_callback(const rm_decision_interfaces::msg::ReceiveSerial::SharedPtr msg);
   void enemypose_callback(const geometry_msgs::msg::PointStamped::SharedPtr msg);
+  void laserScanCallback(const sensor_msgs::msg::LaserScan::SharedPtr scan);
   
 
   std::shared_ptr<State> currentState;
@@ -243,6 +248,7 @@ public:
   rclcpp::Subscription<rm_decision_interfaces::msg::ReceiveSerial>::SharedPtr nav_sub_;
   rclcpp::Subscription<auto_aim_interfaces::msg::Target>::SharedPtr aim_sub_;
   rclcpp::Subscription<geometry_msgs::msg::PointStamped>::SharedPtr enemypose_sub_;
+  rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr laser_sub_;
   std::shared_ptr<tf2_ros::Buffer> tf2_buffer_;
   std::shared_ptr<tf2_ros::TransformListener> tf2_listener_;
   // tf2_ros::Buffer buffer{get_clock()};
@@ -262,6 +268,7 @@ public:
     goal.pose.orientation.z = 0.0;
     goal.pose.orientation.w = 1.0;
     setState(std::make_shared<GoAndStayState>(this));
+    order = true;
   }
     void myoutpose_handle(){
         std::cout << "outpose_handle is called" << std::endl;
@@ -275,6 +282,7 @@ public:
         goal.pose.orientation.z = 0.0;
         goal.pose.orientation.w = 1.0;
         setState(std::make_shared<GoAndStayState>(this));
+        order = true;
     }
     void mybase_handle(){
         std::cout << "base_handle is called" << std::endl;
@@ -288,6 +296,7 @@ public:
         goal.pose.orientation.z = 0.0;
         goal.pose.orientation.w = 1.0;
         setState(std::make_shared<GoAndStayState>(this));
+        order = true;
     }
     void myaddhp_handle(){
         std::cout << "addhp_handle is called" << std::endl;
@@ -301,6 +310,7 @@ public:
         goal.pose.orientation.z = 0.0;
         goal.pose.orientation.w = 1.0;
         setState(std::make_shared<GoAndStayState>(this));
+        order = false;
     }
     void mydefend_handle(){
         std::cout << "defend_handle is called" << std::endl;
@@ -314,13 +324,20 @@ public:
         goal.pose.orientation.z = 0.0;
         goal.pose.orientation.w = 1.0;
         setState(std::make_shared<GoAndStayState>(this));
+        order = true;
     }
     void myattack_handle(){
         std::cout << "attack_handle is called" << std::endl;
         setState(std::make_shared<AttackState>(this));
+        order = true;
     }
     void myGuard_handle(){
         std::cout << "Guard_handle is called" << std::endl;
+        setState(std::make_shared<PatrolState>(this));
+    }
+
+    void myMoveAround_handle(){
+        std::cout << "MoveAround_handle is called" << std::endl;
         setState(std::make_shared<PatrolState>(this));
     }
 
@@ -377,6 +394,15 @@ public:
     else {
       return BT::NodeStatus::FAILURE;
     }
+  }
+
+  BT::NodeStatus IfGuard(){
+      if(!order){
+          return BT::NodeStatus::SUCCESS;
+      }
+      else {
+          return BT::NodeStatus::FAILURE;
+      }
   }
 
 
@@ -462,6 +488,10 @@ public:
         myGuard_handle();
         return BT::NodeStatus::SUCCESS;
   }
+    BT::NodeStatus MoveAround_handle(){
+        myMoveAround_handle();
+        return BT::NodeStatus::SUCCESS;
+    }
 
   //above is used for bt
 };

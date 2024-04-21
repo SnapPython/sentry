@@ -27,7 +27,11 @@
         <IfAttack/>
         <attack_handle/>
       </Sequence>
-      <Guard/>
+      <Sequence>
+        <IfGuard/>
+        <Guard/>
+      </Sequence>
+      <MoveAround/>
     </Fallback>
   </BehaviorTree>
 
@@ -41,6 +45,10 @@
                editable="true"/>
     <Condition ID="IfDefend"
                editable="true"/>
+    <Condition ID="IfGuard"
+               editable="true"/>
+    <Action ID="MoveAround"
+            editable="true"/>
     <Action ID="addhp_handle"
             editable="true"/>
     <Action ID="attack_handle"
