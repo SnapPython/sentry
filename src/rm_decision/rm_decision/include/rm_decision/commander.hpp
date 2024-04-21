@@ -225,9 +225,6 @@ public:
   float self_base;
   int nav_state;  //1 for SUCCEEDED 2 for ABORTED 3 for CANCELED 4 for RUNNING
   bool order = false; //用于巡逻模式，详情见飞书
-
-  void navToRandomPose();
-
   private:
   
   rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SharedPtr nav_to_pose_client;

@@ -335,10 +335,7 @@ namespace rm_decision
 
     }
 
-//    void Commander::navToRandomPose() {
-//       double target_x = 1;
-//       double target_y = 1;
-//   }
+
 
    // 巡逻模式
    void PatrolState::handle() {
