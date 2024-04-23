@@ -1,6 +1,7 @@
 install/
 log/
 build/
+.cache/
 
 # Ignore generated docs
 *.dox

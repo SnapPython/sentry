@@ -141,19 +141,6 @@ namespace rm_serial_driver {
                                 setParam(rclcpp::Parameter("detect_color", packet.detect_color));
                                 previous_receive_color_ = packet.detect_color;
                             }
-
-                        // 创建坐标变换消息和发布
-                        geometry_msgs::msg::TransformStamped t;
-                        timestamp_offset_ =
-                                this->get_parameter("timestamp_offset").as_double();
-                        t.header.stamp =
-                                this->now() + rclcpp::Duration::from_seconds(timestamp_offset_);
-                        t.header.frame_id = "smallodom";
-                        t.child_frame_id = "gimbal_link";
-                        tf2::Quaternion q;
-                        q.setRPY(0.0, packet.pitch / 57.3f, packet.yaw / 57.3f);
-                        t.transform.rotation = tf2::toMsg(q);
-                        tf_broadcaster_->sendTransform(t);
                         //自瞄赋值
                         aim_receive_serial_msg_.header.frame_id = "odom";
                         aim_receive_serial_msg_.header.stamp = this->now();
