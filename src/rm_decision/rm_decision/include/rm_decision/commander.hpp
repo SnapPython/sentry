@@ -228,8 +228,7 @@ public:
   private:
   
   rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SharedPtr nav_to_pose_client;
-  std::thread commander_thread_;
-  std::thread executor_thread_;
+
   void decision();
   void executor();
   void setState(std::shared_ptr<State> state);
@@ -238,6 +237,7 @@ public:
   void nav_callback(const rm_decision_interfaces::msg::ReceiveSerial::SharedPtr msg);
   void enemypose_callback(const geometry_msgs::msg::PointStamped::SharedPtr msg);
   void laserScanCallback(const sensor_msgs::msg::LaserScan::SharedPtr scan);
+  // void cmd;
   
 
   std::shared_ptr<State> currentState;
@@ -246,6 +246,12 @@ public:
   rclcpp::Subscription<auto_aim_interfaces::msg::Target>::SharedPtr aim_sub_;
   rclcpp::Subscription<geometry_msgs::msg::PointStamped>::SharedPtr enemypose_sub_;
   rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr laser_sub_;
+
+  rclcpp::Publisher<rm_decision_interfaces::msg::ReceiveSerial>::SharedPtr sentry_cmd_pub_;
+
+  std::thread commander_thread_;
+  std::thread executor_thread_;
+
   std::shared_ptr<tf2_ros::Buffer> tf2_buffer_;
   std::shared_ptr<tf2_ros::TransformListener> tf2_listener_;
   // tf2_ros::Buffer buffer{get_clock()};
@@ -335,7 +341,7 @@ public:
 
     void myMoveAround_handle(){
         std::cout << "MoveAround_handle is called" << std::endl;
-        setState(std::make_shared<PatrolState>(this));
+        setState(std::make_shared<MoveState>(this));
     }
 
     BT::NodeStatus dafu_ordered(){
@@ -345,8 +351,7 @@ public:
     else {
       return BT::NodeStatus::FAILURE;
     }
-    
-  }
+    }
 
   BT::NodeStatus outpose_ordered(){
     if (outpose) {
@@ -355,7 +360,7 @@ public:
     else {
       return BT::NodeStatus::FAILURE;
     }
-  }
+    }
 
   BT::NodeStatus base_ordered(){
     if (base) {
@@ -364,7 +369,7 @@ public:
     else {
       return BT::NodeStatus::FAILURE;
     }
-  }
+    }
 
   BT::NodeStatus IfAddHp(){
     if (self_hp <= 150 || self_ammo < 50) {
@@ -373,7 +378,7 @@ public:
     else {
       return BT::NodeStatus::FAILURE;
     }
-  }
+    }
 
   BT::NodeStatus IfDefend(){
     if(self_base <= 150){
@@ -382,7 +387,7 @@ public:
     else {
     return BT::NodeStatus::FAILURE;
     }
-  }
+    }
 
   BT::NodeStatus IfAttack(){
     if(self_hp >= 200 && distence(enemypose) <= 3.0){
@@ -391,7 +396,7 @@ public:
     else {
       return BT::NodeStatus::FAILURE;
     }
-  }
+    }
 
   BT::NodeStatus IfGuard(){
       if(!order){
@@ -400,7 +405,7 @@ public:
       else {
           return BT::NodeStatus::FAILURE;
       }
-  }
+    }
 
 
     BT::NodeStatus dafu_handle(){
@@ -414,7 +419,7 @@ public:
         else {
           return BT::NodeStatus::FAILURE;
         }
-    }
+      }
 
     BT::NodeStatus outpose_handle(){
         myoutpose_handle();
@@ -427,7 +432,7 @@ public:
         else {
             return BT::NodeStatus::FAILURE;
         }
-    }
+      }
 
     BT::NodeStatus base_handle(){
         mybase_handle();
@@ -440,7 +445,7 @@ public:
         else {
             return BT::NodeStatus::FAILURE;
         }
-    }
+      }
 
     BT::NodeStatus addhp_handle(){
         myaddhp_handle();
@@ -453,7 +458,7 @@ public:
         else {
             return BT::NodeStatus::FAILURE;
         }
-    }
+      }
 
     BT::NodeStatus defend_handle(){
         mydefend_handle();
@@ -466,7 +471,7 @@ public:
         else {
             return BT::NodeStatus::FAILURE;
         }
-    }
+      }
 
     BT::NodeStatus attack_handle(){
         myattack_handle();
@@ -479,16 +484,17 @@ public:
         else {
             return BT::NodeStatus::FAILURE;
         }
-    }
+      }
 
     BT::NodeStatus Guard_handle(){
         myGuard_handle();
         return BT::NodeStatus::SUCCESS;
-  }
+    }
+  
     BT::NodeStatus MoveAround_handle(){
         myMoveAround_handle();
         return BT::NodeStatus::SUCCESS;
-    }
+      }
 
   //above is used for bt
 };

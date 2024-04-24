@@ -57,9 +57,6 @@ namespace rm_decision
       RCLCPP_INFO(this->get_logger(), "开始");
       currentState = std::make_shared<WaitState>(this);
 
-
-
-      // 创建订阅(订阅裁判系统的信息)
       nav_sub_ = this->create_subscription<rm_decision_interfaces::msg::ReceiveSerial>(
          "/nav/sub", 10, std::bind(&Commander::nav_callback, this, std::placeholders::_1));
       aim_sub_ = this->create_subscription<auto_aim_interfaces::msg::Target>(
@@ -68,10 +65,11 @@ namespace rm_decision
          "/tracker/enemypose", 10,std::bind(&Commander::enemypose_callback, this, std::placeholders::_1));
       laser_sub_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
               "scan", 10,std::bind(&Commander::laserScanCallback, this, std::placeholders::_1));
+      sentry_cmd_pub_ = this->create_publisher<rm_decision_interfaces::msg::ReceiveSerial>("sentry/cmd", 10);
+
       // 创建线程（处理信息和发布命令）
       commander_thread_ = std::thread(&Commander::decision, this);
       executor_thread_ = std::thread(&Commander::executor, this);
-
    }
    // 析构函数
    Commander::~Commander(){
@@ -134,6 +132,11 @@ namespace rm_decision
          r.sleep();
       }
    }
+
+   // 发布命令线程 还没写好
+   // void Commander::cmd(){
+   //    // sentry_cmd_pub_->publish(packet);
+   // }
 
    // 改变状态
    void Commander::setState(std::shared_ptr<State> state) {
@@ -233,7 +236,6 @@ namespace rm_decision
          RCLCPP_INFO(this->get_logger(), "%s随机导航点个数: %ld",it->c_str(),(*list).size());
          list ++;
       }
-      RCLCPP_INFO(this->get_logger(), "传入第个导航点: %.2f, %.2f, %.2f,%2f",list_name.at(0)[1].pose.position.x,list_name.at(1)[1].pose.position.x,list_name.at(2)[0].pose.position.x,list_name.at(0)[0].pose.position.x);
       Patrol_points_ = list_name.at(0);
       random = Patrol_points_.begin();
       Route3_points_ = list_name.at(2);
@@ -300,11 +302,11 @@ namespace rm_decision
       //    enemy_base_hp = msg->blue_base_hp;
       // }
       // packet.game_progress = msg->game_progress;
-      self_7.hp = msg->self_hp;
-      enemy_base_hp = msg->base_hp;
-      time =300 - msg->time;
+      // self_7.hp = msg->self_hp;
+      // enemy_base_hp = msg->base_hp;
+      // time =300 - msg->time;
       // packet.rfid_status = msg->rfid_status;
-      event_data = msg->event_data;
+      // event_data = msg->event_data;
       // packet.supply_robot_id = msg->supply_robot_id;
       // packet.supply_projectile_num = msg->supply_projectile_num;
    }

@@ -149,7 +149,7 @@ namespace rm_serial_driver {
 
                         // 导航赋值
                         //红方机器人血量
-                        nav_receive_serial_msg_.time = packet.time;
+                        // nav_receive_serial_msg_.time = packet.time;
                         // nav_receive_serial_msg_.game_progress = packet.game_progress;
                         // nav_receive_serial_msg_.red_1 = packet.red_1;
                         // nav_receive_serial_msg_.red_2 = packet.red_2;
@@ -170,9 +170,9 @@ namespace rm_serial_driver {
                         // nav_receive_serial_msg_.blue_base_hp = packet.blue_base_hp;
                         //增益点信息
                         // nav_receive_serial_msg_.rfid_status = packet.rfid_status;
-                        nav_receive_serial_msg_.self_hp = packet.self_hp;
-                        nav_receive_serial_msg_.base_hp = packet.base_hp;
-                        nav_receive_serial_msg_.event_data = packet.event_data;
+                        // nav_receive_serial_msg_.self_hp = packet.self_hp;
+                        // nav_receive_serial_msg_.base_hp = packet.base_hp;
+                        // nav_receive_serial_msg_.event_data = packet.event_data;
                         //其他机器人弹量
                         // nav_receive_serial_msg_.supply_robot_id = packet.supply_robot_id;
                         // nav_receive_serial_msg_.supply_projectile_num = packet.supply_projectile_num;
