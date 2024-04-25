@@ -45,13 +45,13 @@ private:
 
   void receiveData();
 
-  void sendData(const geometry_msgs::msg::Twist& cmd_vel);
+  void sendData();
+
+  void navSendData(const geometry_msgs::msg::Twist& cmd_vel);
+
+  void decisionSendData(const rm_decision_interfaces::msg::Serial::SharedPtr msg);
 
   void reopenPort();
-
-  void setParam(const rclcpp::Parameter & param);
-
-  void resetTracker();
 
   // Serial port
   std::unique_ptr<IoContext> owned_ctx_;

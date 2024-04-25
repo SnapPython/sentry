@@ -64,7 +64,7 @@ RMSerialDriver::RMSerialDriver(const rclcpp::NodeOptions & options)
 
   // Create Subscription
   nav_sub_ = this->create_subscription<geometry_msgs::msg::Twist>("cmd_vel", rclcpp::SensorDataQoS(),
-  std::bind(&RMSerialDriver::sendData, this, std::placeholders::_1));
+  std::bind(&RMSerialDriver::navSendData, this, std::placeholders::_1));
 
 }
 
@@ -159,7 +159,7 @@ void RMSerialDriver::receiveData()
 
 }
 
-void RMSerialDriver::sendData(const geometry_msgs::msg::Twist& cmd_vel)
+void RMSerialDriver::navSendData(const geometry_msgs::msg::Twist& cmd_vel)
 {
 
   try {
@@ -172,6 +172,35 @@ void RMSerialDriver::sendData(const geometry_msgs::msg::Twist& cmd_vel)
     packet.nav_x = cmd_vel.linear.x;
     packet.nav_y = cmd_vel.linear.y;
     
+    //crc16::Append_CRC16_Check_Sum(reinterpret_cast<uint8_t *>(&packet), sizeof(packet));
+
+    CRC_check = crc16::Get_CRC16_Check_Sum(reinterpret_cast<uint8_t *>(&packet), sizeof(packet) - 2, CRC16_init);
+
+    //std::cout << "CRC_check: " << CRC_check << std::endl;
+
+    packet.checksum = CRC_check;
+
+    std::vector<uint8_t> data = toVector(packet);
+
+    serial_driver_->port()->send(data);
+    
+  } catch (const std::exception & ex) {
+    RCLCPP_ERROR(get_logger(), "Error while sending data: %s", ex.what());
+    reopenPort();
+  }
+}
+
+void RMSerialDriver::decisionSendData(const rm_decision_interfaces::msg::Serial::SharedPtr msg)
+{
+
+  try {
+    uint16_t CRC_check = 0x0000;
+    uint16_t CRC16_init = 0xFFFF;
+
+    SendPacket packet;
+    packet.header = 0xA5;
+    packet.naving = false;
+    packet.sentry_cmd = msg->sentry_cmd;
     
     //crc16::Append_CRC16_Check_Sum(reinterpret_cast<uint8_t *>(&packet), sizeof(packet));
 
