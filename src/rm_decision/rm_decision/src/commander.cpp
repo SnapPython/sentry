@@ -57,7 +57,7 @@ namespace rm_decision
       RCLCPP_INFO(this->get_logger(), "开始");
       currentState = std::make_shared<WaitState>(this);
 
-      nav_sub_ = this->create_subscription<rm_decision_interfaces::msg::ReceiveSerial>(
+      nav_sub_ = this->create_subscription<rm_decision_interfaces::msg::Serial>(
          "/nav/sub", 10, std::bind(&Commander::nav_callback, this, std::placeholders::_1));
       aim_sub_ = this->create_subscription<auto_aim_interfaces::msg::Target>(
          "/tracker/target", rclcpp::SensorDataQoS(),std::bind(&Commander::aim_callback, this, std::placeholders::_1));
@@ -65,7 +65,7 @@ namespace rm_decision
          "/tracker/enemypose", 10,std::bind(&Commander::enemypose_callback, this, std::placeholders::_1));
       laser_sub_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
               "scan", 10,std::bind(&Commander::laserScanCallback, this, std::placeholders::_1));
-      sentry_cmd_pub_ = this->create_publisher<rm_decision_interfaces::msg::ReceiveSerial>("sentry/cmd", 10);
+      sentry_cmd_pub_ = this->create_publisher<rm_decision_interfaces::msg::Serial>("sentry/cmd", 10);
 
       // 创建线程（处理信息和发布命令）
       commander_thread_ = std::thread(&Commander::decision, this);
@@ -264,7 +264,7 @@ namespace rm_decision
 
    
    // 订阅回调
-   void Commander::nav_callback(const rm_decision_interfaces::msg::ReceiveSerial::SharedPtr msg) {
+   void Commander::nav_callback(const rm_decision_interfaces::msg::Serial::SharedPtr msg) {
       // if(msg->color == 1){
       //    enemy_1.hp = msg->red_1;
       //    enemy_2.hp = msg->red_2;

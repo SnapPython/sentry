@@ -16,6 +16,8 @@ namespace crc16
   */
 uint32_t Verify_CRC16_Check_Sum(const uint8_t * pchMessage, uint32_t dwLength);
 
+uint16_t Get_CRC16_Check_Sum(const uint8_t * pchMessage, uint32_t dwLength, uint16_t wCRC);
+
 /**
   * @brief Append CRC16 value to the end of the buffer
   * @param[in] pchMessage : Data to Verify,

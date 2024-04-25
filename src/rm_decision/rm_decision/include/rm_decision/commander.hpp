@@ -33,7 +33,7 @@
 
 #include "rm_decision_interfaces/msg/all_robot_hp.hpp"
 #include "auto_aim_interfaces/msg/target.hpp"
-#include "rm_decision_interfaces/msg/receive_serial.hpp"
+#include "rm_decision_interfaces/msg/serial.hpp"
 
 #include <sensor_msgs/msg/laser_scan.hpp>
 //behave tree
@@ -234,7 +234,7 @@ public:
   void setState(std::shared_ptr<State> state);
   void loadNavPoints();
   void aim_callback(const auto_aim_interfaces::msg::Target::SharedPtr msg);
-  void nav_callback(const rm_decision_interfaces::msg::ReceiveSerial::SharedPtr msg);
+  void nav_callback(const rm_decision_interfaces::msg::Serial::SharedPtr msg);
   void enemypose_callback(const geometry_msgs::msg::PointStamped::SharedPtr msg);
   void laserScanCallback(const sensor_msgs::msg::LaserScan::SharedPtr scan);
   // void cmd;
@@ -242,12 +242,12 @@ public:
 
   std::shared_ptr<State> currentState;
 
-  rclcpp::Subscription<rm_decision_interfaces::msg::ReceiveSerial>::SharedPtr nav_sub_;
+  rclcpp::Subscription<rm_decision_interfaces::msg::Serial>::SharedPtr nav_sub_;
   rclcpp::Subscription<auto_aim_interfaces::msg::Target>::SharedPtr aim_sub_;
   rclcpp::Subscription<geometry_msgs::msg::PointStamped>::SharedPtr enemypose_sub_;
   rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr laser_sub_;
 
-  rclcpp::Publisher<rm_decision_interfaces::msg::ReceiveSerial>::SharedPtr sentry_cmd_pub_;
+  rclcpp::Publisher<rm_decision_interfaces::msg::Serial>::SharedPtr sentry_cmd_pub_;
 
   std::thread commander_thread_;
   std::thread executor_thread_;
