@@ -25,7 +25,9 @@
 
 
 //导航的自定义消息类型
-#include "rm_decision_interfaces/msg/serial.hpp"
+#include "rm_decision_interfaces/msg/from_serial.hpp"
+#include "rm_decision_interfaces/msg/to_serial.hpp"
+
 
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include <geometry_msgs/msg/twist.hpp>
@@ -45,11 +47,9 @@ private:
 
   void receiveData();
 
-  void sendData();
-
   void navSendData(const geometry_msgs::msg::Twist& cmd_vel);
 
-  void decisionSendData(const rm_decision_interfaces::msg::Serial::SharedPtr msg);
+  void decisionSendData(const rm_decision_interfaces::msg::ToSerial::SharedPtr msg);
 
   void reopenPort();
 
@@ -60,6 +60,9 @@ private:
   std::unique_ptr<drivers::serial_driver::SerialDriver> serial_driver_;
 
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr nav_sub_;
+  rclcpp::Subscription<rm_decision_interfaces::msg::ToSerial>::SharedPtr from_decision_sub_;
+
+  rclcpp::Publisher<rm_decision_interfaces::msg::FromSerial>::SharedPtr to_decision_pub_;
 
   std::thread receive_thread_;
 

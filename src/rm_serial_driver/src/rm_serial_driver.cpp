@@ -12,7 +12,6 @@
 // C++ system
 #include <cstdint>
 #include <functional>
-#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -33,9 +32,11 @@ RMSerialDriver::RMSerialDriver(const rclcpp::NodeOptions & options)
   getParams();
 
   // Create Publisher
+  to_decision_pub_ = this->create_publisher<rm_decision_interfaces::msg::FromSerial>("judge", 10);
 
 
-  try {
+
+    try {
     serial_driver_->init_port(device_name_, *device_config_);
     if (!serial_driver_->port()->is_open()) {
       serial_driver_->port()->open();
@@ -63,8 +64,12 @@ RMSerialDriver::RMSerialDriver(const rclcpp::NodeOptions & options)
 
 
   // Create Subscription
-  nav_sub_ = this->create_subscription<geometry_msgs::msg::Twist>("cmd_vel", rclcpp::SensorDataQoS(),
-  std::bind(&RMSerialDriver::navSendData, this, std::placeholders::_1));
+  nav_sub_ = this->create_subscription<geometry_msgs::msg::Twist>
+          ("cmd_vel", rclcpp::SensorDataQoS(),
+           std::bind(&RMSerialDriver::navSendData, this, std::placeholders::_1));
+  from_decision_sub_ = this->create_subscription<rm_decision_interfaces::msg::ToSerial>
+          ("sentry/cmd",rclcpp::SensorDataQoS(),
+           std::bind(&RMSerialDriver::decisionSendData,this,std::placeholders::_1));
 
 }
 
@@ -98,7 +103,6 @@ void RMSerialDriver::receiveData()
   while (rclcpp::ok()) {
       try {
           // 这一行从串行端口接收一个字节的数据，将其存储在 header 向量中
-          //serial_driver_->port()->receive(header);
       serial_driver_->port()->receive(header);
 
           if (receiving_data) {
@@ -106,7 +110,7 @@ void RMSerialDriver::receiveData()
               data_buffer.push_back(header[0]);
               // std::cout << "header[0]" << static_cast<int>(header[0]) << std::endl;
               if (header[0] == 0xAA) {
-                  // 如果检测到结束标识符（0xAAA），则停止接收数据并处理
+                  // 如果检测到结束标识符（0xAA），则停止接收数据并处理
                   receiving_data = false;
                   // for(int i = 0; i < static_cast<int>(data_buffer.size()); i++)
                   // {
@@ -126,11 +130,26 @@ void RMSerialDriver::receiveData()
                       //std::cout<< "packet.checksum: " << packet.checksum << std::endl;
                       if(CRC_check == packet.checksum)
                       {
-                      // 执行您的操作，例如设置参数、发布消息等
+                        // 执行您的操作，例如设置参数、发布消息等
+                        rm_decision_interfaces::msg::FromSerial msg;
+                        //导航
+                        msg.gamestart = packet.gamestart;
+                        msg.color = packet.color;
 
+                        msg.projectile_allowance_17mm = packet.projectile_allowance_17mm;
+                        msg.remaining_gold_coin = packet.remaining_gold_coin;
 
-                      
-                      
+                        msg.supply_robot_id = packet.supply_robot_id;
+                        msg.supply_projectile_num = packet.supply_projectile_num;
+
+                        msg.red_7 = packet.red_7;
+                        msg.red_outpost_hp = packet.red_outpost_HP;
+                        msg.red_base_hp = packet.red_base_HP;
+
+                        msg.blue_7 = packet.blue_7;
+                        msg.blue_outpost_hp = packet.blue_outpost_HP;
+                        msg.blue_base_hp = packet.blue_base_HP;
+
                       //std::cout<< "good "<< std::endl;
                       }
                       else
@@ -190,7 +209,7 @@ void RMSerialDriver::navSendData(const geometry_msgs::msg::Twist& cmd_vel)
   }
 }
 
-void RMSerialDriver::decisionSendData(const rm_decision_interfaces::msg::Serial::SharedPtr msg)
+void RMSerialDriver::decisionSendData(const rm_decision_interfaces::msg::ToSerial::SharedPtr msg)
 {
 
   try {

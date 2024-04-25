@@ -16,7 +16,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/FriendLocation.msg"
   "msg/RFID.msg"
   "msg/RobotStatus.msg"
-  "msg/Serial.msg"
+  "msg/ToSerial.msg"
+  "msg/FromSerial.msg"
   DEPENDENCIES geometry_msgs # Add packages that above messages depend on, in this case geometry_msgs for Sphere.msg
 )
 # uncomment the following section in order to fill in

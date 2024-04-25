@@ -10,9 +10,7 @@ uint8 supply_projectile_num
 uint16 red_7
 uint16 red_outpost_hp
 uint16 red_base_hp
-    
+
 uint16 blue_7
 uint16 blue_outpost_hp
 uint16 blue_base_hp
-
-uint32 sentry_cmd
